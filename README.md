@@ -1,9 +1,9 @@
 # DGraph
-  DGraph is a large-scale graph processing system.
+  DGraph is a disk-based graph processing system for directed graph analysis.
   
-  * It gives you simple APIs and very fast computing speed.
-  
-  * Its core algorithm is SCC-DAG execution model.
+  * It enables fast convergence speed and low data access cost.
+  
+  * Its core method is an efficient SCC-DAG execution model.
 
 ## Start Up
 ### Install
@@ -197,20 +197,20 @@ int main(int argc, char *argv[])
 ### Basic Algorithm: SCC-DAG execution model
 Just waiting for our paper publishment :)
 ### System Implementation
-To support SCC-DAG model, we have implemented a graph processing system, called DGraph1. It supports inmemory computing as well as out-of-core computing. 
+To support SCC-DAG model, we have implemented a graph processing system, called DGraph. It supports in-memory computing as well as out-of-core computing. 
 
 #### 1. System Architecture
-According to our SCC-DAG model, the DGraph has two stages, i.e., the preprocessing stage and the execution stage. In the preprocessing stage, it figures out SCCs, gets topological sorting and constructs sequential storage structure. In the execution stage, it executes different programs which are given by user according to different graph algorithms. The preprocessing stage is done only once to generate graph data files. After that, it is able to directly enter the execution stage to execute different graph algorithm as needed.
+According to our SCC-DAG model, the DGraph has two stages, i.e., the preprocessing stage and the execution stage. In the preprocessing stage, it figures out SCCs, gets topological sorting and constructs sequential storage structure. In the execution stage, it executes different programs which are given by user according to different graph algorithms. The preprocessing stage is done only once for static graph to generate graph data files. After that, it is able to directly enter the execution stage to execute different graph algorithm as needed.
 
 <div align="center">
 <img src="doc/Framework.png" />
 <br>
-Figure: The architecture of DGraph
+Figure 1: The architecture of DGraph
 </div>
 
 
 
-The architecture of DGraph is depicted in Figure. It includes three modules. Upon hardware, there is a basic module, i.e., graph data module (GDM). It supplies efficient data access for out-of-core computing. Based on GDM, there are build module (BM) and calc module (CM). BM preprocesses the original graph dataset and generates compressed sequential storage structure. CM provides calc APIs for programmer to execute graph algorithm and automatically executes the graph algorithms in a parallel way. Programmer can implement different graph algorithm by invoking calc APIs.
+The architecture of DGraph is depicted in Figure 1. It includes three modules. Upon hardware, there is a basic module, i.e., graph data module (GDM). It supplies efficient data access for out-of-core computing. Based on GDM, there are build module (BM) and calc module (CM). BM preprocesses the original graph dataset and generates compressed sequential storage structure. CM provides calc APIs for programmer to execute graph algorithm and automatically executes the graph algorithms in a parallel way. Programmer can implement different graph algorithm by invoking calc APIs.
 
 #### 2. Optimization for Out-of-core Computing
 The graph may be much larger than the memory size of a machine. In order to satisfy this requirement, DGraph is designed as an out-of-core computing system. It means that hard disk is leveraged to expand the size of memory. However, during the graph processing, data is frequently swapped between memory and hard disk and may induce low computing efficiency. 
@@ -218,12 +218,12 @@ The graph may be much larger than the memory size of a machine. In order to sati
 <div align="center">
 <img src="doc/graph data struct.png"/>
 <br>
-Figure: Sequential Storage Structure
+Figure 2: Sequential Storage Structure
 </div>
 
 
 
-**Sequential Storage Structure.** In order to exploit the high sequential bandwidth, graph data is often expected to be accessed in a sequential way. Consequently, we design a sequential storage structure for DGraph as described in Figure. As the above discussed, the level is processed sequentially. Therefore, we can use level ID to locate the sequence of SCCs in this level. After that, we can locate the sequence of vertices of a SCC and locate the edge data of a vertex. In this way, all data can be sequentially stored
+**Sequential Storage Structure.** In order to exploit the high sequential bandwidth, graph data is often expected to be accessed in a sequential way. Consequently, we design a sequential storage structure for DGraph as described in Figure 2. As the above discussed, the level is processed sequentially. Therefore, we can use level ID to locate the sequence of SCCs in this level. After that, we can locate the sequence of vertices of a SCC and locate the edge data of a vertex. In this way, all data can be sequentially stored
 and is allow to be sequentially accessed.
 
 **Data Compressing.** To reduce the number of I/O operations, we compress the edge data to reduce the total volume of the graph. Because the edge data are sequentially stored and the data are integers, we use Base 128 Varints algorithm to compress. It is a sequential integer compress algorithm. The length of compress data is related to the digital size of number. The smaller the number be, the shorter the length of compress data is. Thus, we sort the edge ID of each vertex, and only compress the delta-value between an edge ID and next edge ID. Data compress brings some extra overhead. But to big graph, the benefits of reducing swap operation is more than the extra overhead.
